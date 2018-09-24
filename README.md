@@ -213,7 +213,7 @@ methods. Also, you may only modify code in the `index` directory.
 
 
 ## Step 4: Submitting the Assignment
-We will release submission instructions for Edx closer to the due date.
+Please find the submission instructions on Piazza.
 
 ## Testing
 All of our public tests for this project are in the `edu.berkeley.cs186.database.index` package in the `src/test/java` folder. These are the tests that `maven clean test` runs. 60% of your grade will be made up of these public tests and 40% will be made up of hidden tests on our autograder.
