@@ -32,9 +32,9 @@ public class TestBPlusTree {
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
-    // 10 seconds max per method tested.
+    // 60 seconds max per method tested.
     @Rule
-    public TestRule globalTimeout = new DisableOnDebug(Timeout.seconds(10));
+    public TestRule globalTimeout = new DisableOnDebug(Timeout.seconds(60));
 
     // Helpers /////////////////////////////////////////////////////////////////
     @Before
