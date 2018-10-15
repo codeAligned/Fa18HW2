@@ -132,20 +132,59 @@ class LeafNode extends BPlusNode {
   // See BPlusNode.get.
   @Override
   public LeafNode get(DataBox key) {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+//    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    return this;
   }
 
   // See BPlusNode.getLeftmostLeaf.
   @Override
   public LeafNode getLeftmostLeaf() {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+//    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    return this;
   }
 
   // See BPlusNode.put.
   @Override
   public Optional<Pair<DataBox, Integer>> put(DataBox key, RecordId rid)
       throws BPlusTreeException {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+//    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    if (keys.contains(key)) {
+      throw new BPlusTreeException("A duplicate key is inserted!");
+    }
+
+    // find place to insert
+    int index = keys.size();
+    for (int i = 0; i < keys.size(); i++) {
+      if (key.compareTo(keys.get(i)) < 0) {
+        index = i;
+        break;
+      }
+    }
+    // insert pair (key, rid)
+    keys.add(index, key);
+    rids.add(index, rid);
+
+    // If inserting the pair (k, r) does NOT cause n to overflow, then Optional.empty() is returned.
+    if (keys.size() <= metadata.getOrder() * 2) {
+      sync();
+      return Optional.empty();
+    }
+
+    // If inserting the pair (k, r) does cause the node n to overflow, then n is split into a left
+    // and right node and a pair (split_key, right_node_page_num) is returned, where right_node_page_num
+    // is the page number of the newly created right node, and the value of split_key is the new key.
+    List<DataBox> newKeys = new ArrayList<>();
+    List<RecordId> newRids = new ArrayList<>();
+    int d = metadata.getOrder();
+    while (d < keys.size()) {
+      newKeys.add(keys.remove(d));
+      newRids.add(rids.remove(d));
+    }
+    LeafNode rightNode = new LeafNode(metadata, newKeys, newRids, this.rightSibling);
+    int rightNodePageNum = rightNode.getPage().getPageNum();
+    this.rightSibling = Optional.of(rightNodePageNum);
+    sync();
+    return Optional.of(new Pair<>(rightNode.keys.get(0), rightNodePageNum));
   }
 
   // See BPlusNode.bulkLoad.
@@ -153,13 +192,56 @@ class LeafNode extends BPlusNode {
   public Optional<Pair<DataBox, Integer>> bulkLoad(Iterator<Pair<DataBox, RecordId>> data,
                                                    float fillFactor)
       throws BPlusTreeException {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+//    throw new UnsupportedOperationException("TODO(hw2): implement.");
+      int fullLimit = (int)Math.ceil(2 * metadata.getOrder() * fillFactor);
+      while (data.hasNext() && keys.size() <= fullLimit) {
+        Pair<DataBox, RecordId> p = data.next();
+        DataBox key = p.getFirst();
+        RecordId rid = p.getSecond();
+
+        if (keys.contains(key)) {
+          throw new BPlusTreeException("A duplicate key is inserted!");
+        }
+
+        // find place to insert
+        int index = keys.size();
+        for (int i = 0; i < keys.size(); i++) {
+          if (key.compareTo(keys.get(i)) < 0) {
+            index = i;
+            break;
+          }
+        }
+        // insert pair (key, rid)
+        keys.add(index, key);
+        rids.add(index, rid);
+      }
+
+      Optional<Pair<DataBox, Integer>> newPair = Optional.empty();
+      if (keys.size() > fullLimit) {
+        List<DataBox> newKeys = new ArrayList<>();
+        List<RecordId> newRids = new ArrayList<>();
+        newKeys.add(keys.remove(keys.size() - 1));
+        newRids.add(rids.remove(rids.size() - 1));
+        LeafNode newLeafNode = new LeafNode(metadata, newKeys, newRids, this.rightSibling);
+        int newLeafNodePageNum = newLeafNode.getPage().getPageNum();
+        this.rightSibling = Optional.of(newLeafNodePageNum);
+        newPair = Optional.of(new Pair<>(newKeys.get(0), newLeafNodePageNum));
+      }
+      sync();
+      return newPair;
   }
 
   // See BPlusNode.remove.
   @Override
   public void remove(DataBox key) {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+//    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    if (keys.contains(key)) {
+      int index = keys.indexOf(key);
+      keys.remove(key);
+      rids.remove(index);
+      sync();
+    }
+
   }
 
   // Iterators /////////////////////////////////////////////////////////////////
@@ -335,7 +417,24 @@ class LeafNode extends BPlusNode {
    * meta.getAllocator().
    */
   public static LeafNode fromBytes(BPlusTreeMetadata metadata, int pageNum) {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+//    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    Page page = metadata.getAllocator().fetchPage(pageNum);
+    ByteBuffer buf = page.getByteBuffer();
+
+    assert(buf.get() == (byte) 1);
+
+    int siblingPageId = buf.getInt();
+    Optional<Integer> rightSibling = (siblingPageId == -1) ? Optional.empty() : Optional.of(siblingPageId);
+
+    List<DataBox> keys = new ArrayList<>();
+    List<RecordId> rids = new ArrayList<>();
+    int n = buf.getInt();
+    for (int i = 0; i < n; i++) {
+      keys.add(DataBox.fromBytes(buf, metadata.getKeySchema()));
+      rids.add(RecordId.fromBytes(buf));
+    }
+
+    return new LeafNode(metadata, pageNum, keys, rids, rightSibling);
   }
 
   // Builtins //////////////////////////////////////////////////////////////////

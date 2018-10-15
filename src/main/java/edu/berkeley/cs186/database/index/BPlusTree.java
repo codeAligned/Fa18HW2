@@ -269,7 +269,8 @@ public class BPlusTree {
      * bulkLoad (see comments in BPlusNode.bulkLoad).
      */
     public void bulkLoad(Iterator<Pair<DataBox, RecordId>> data, float fillFactor) throws BPlusTreeException {
-      throw new UnsupportedOperationException("TODO(hw2): implement.");
+//      throw new UnsupportedOperationException("TODO(hw2): implement.");
+
     }
 
     /**
