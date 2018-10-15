@@ -132,14 +132,12 @@ class LeafNode extends BPlusNode {
   // See BPlusNode.get.
   @Override
   public LeafNode get(DataBox key) {
-//    throw new UnsupportedOperationException("TODO(hw2): implement.");
     return this;
   }
 
   // See BPlusNode.getLeftmostLeaf.
   @Override
   public LeafNode getLeftmostLeaf() {
-//    throw new UnsupportedOperationException("TODO(hw2): implement.");
     return this;
   }
 
@@ -147,7 +145,6 @@ class LeafNode extends BPlusNode {
   @Override
   public Optional<Pair<DataBox, Integer>> put(DataBox key, RecordId rid)
       throws BPlusTreeException {
-//    throw new UnsupportedOperationException("TODO(hw2): implement.");
     if (keys.contains(key)) {
       throw new BPlusTreeException("A duplicate key is inserted!");
     }
@@ -186,7 +183,6 @@ class LeafNode extends BPlusNode {
   public Optional<Pair<DataBox, Integer>> bulkLoad(Iterator<Pair<DataBox, RecordId>> data,
                                                    float fillFactor)
       throws BPlusTreeException {
-//    throw new UnsupportedOperationException("TODO(hw2): implement.");
       int fullLimit = (int)Math.ceil(2 * metadata.getOrder() * fillFactor);
       while (data.hasNext() && keys.size() <= fullLimit) {
         Pair<DataBox, RecordId> p = data.next();
@@ -222,7 +218,6 @@ class LeafNode extends BPlusNode {
   // See BPlusNode.remove.
   @Override
   public void remove(DataBox key) {
-//    throw new UnsupportedOperationException("TODO(hw2): implement.");
     if (keys.contains(key)) {
       int index = keys.indexOf(key);
       keys.remove(key);
@@ -405,7 +400,6 @@ class LeafNode extends BPlusNode {
    * meta.getAllocator().
    */
   public static LeafNode fromBytes(BPlusTreeMetadata metadata, int pageNum) {
-//    throw new UnsupportedOperationException("TODO(hw2): implement.");
     Page page = metadata.getAllocator().fetchPage(pageNum);
     ByteBuffer buf = page.getByteBuffer();
 

@@ -70,7 +70,6 @@ class InnerNode extends BPlusNode {
   // See BPlusNode.get.
   @Override
   public LeafNode get(DataBox key) {
-//    throw new UnsupportedOperationException("TODO(hw2): implement.");
     int index = numLessThanEqual(key, keys);
     int childPageNum = children.get(index);
     BPlusNode childNode = BPlusNode.fromBytes(metadata, childPageNum);
@@ -83,7 +82,6 @@ class InnerNode extends BPlusNode {
   // See BPlusNode.getLeftmostLeaf.
   @Override
   public LeafNode getLeftmostLeaf() {
-//    throw new UnsupportedOperationException("TODO(hw2): implement.");
     BPlusNode childNode = getChild(0);
     while (childNode instanceof InnerNode) {
       childNode = childNode.getLeftmostLeaf();
@@ -95,7 +93,6 @@ class InnerNode extends BPlusNode {
   @Override
   public Optional<Pair<DataBox, Integer>> put(DataBox key, RecordId rid)
       throws BPlusTreeException {
-//    throw new UnsupportedOperationException("TODO(hw2): implement.");
 
     int keyIndex = numLessThanEqual(key, keys);
     BPlusNode childNode = getChild(keyIndex);
@@ -137,7 +134,6 @@ class InnerNode extends BPlusNode {
   public Optional<Pair<DataBox, Integer>> bulkLoad(Iterator<Pair<DataBox, RecordId>> data,
                                                    float fillFactor)
       throws BPlusTreeException {
-//    throw new UnsupportedOperationException("TODO(hw2): implement.");
     int d = metadata.getOrder();
     Optional<Pair<DataBox, Integer>> op;
     while (data.hasNext() && keys.size() <= d * 2) {
@@ -171,7 +167,6 @@ class InnerNode extends BPlusNode {
   // See BPlusNode.remove.
   @Override
   public void remove(DataBox key) {
-//    throw new UnsupportedOperationException("TODO(hw2): implement.");
     LeafNode leafNode = get(key);
     leafNode.remove(key);
     sync();

@@ -378,7 +378,6 @@ public class BPlusTree {
 
     // Iterator ////////////////////////////////////////////////////////////////
     private class BPlusTreeIterator implements Iterator<RecordId> {
-      // TODO(hw2): Add whatever fields and constructors you want here.
 
       LeafNode leafNode;
       Iterator<RecordId> currentIterator;
