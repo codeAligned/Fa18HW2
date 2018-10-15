@@ -153,13 +153,7 @@ class LeafNode extends BPlusNode {
     }
 
     // find place to insert
-    int index = keys.size();
-    for (int i = 0; i < keys.size(); i++) {
-      if (key.compareTo(keys.get(i)) < 0) {
-        index = i;
-        break;
-      }
-    }
+    int index = InnerNode.numLessThanEqual(key, keys);
     // insert pair (key, rid)
     keys.add(index, key);
     rids.add(index, rid);
@@ -204,13 +198,7 @@ class LeafNode extends BPlusNode {
         }
 
         // find place to insert
-        int index = keys.size();
-        for (int i = 0; i < keys.size(); i++) {
-          if (key.compareTo(keys.get(i)) < 0) {
-            index = i;
-            break;
-          }
-        }
+        int index = InnerNode.numLessThanEqual(key, keys);
         // insert pair (key, rid)
         keys.add(index, key);
         rids.add(index, rid);

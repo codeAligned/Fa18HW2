@@ -106,16 +106,10 @@ class InnerNode extends BPlusNode {
       int rightNodePageNum = pair.get().getSecond();
 
       // find place to insert
-      int index = keys.size();
-      for (int i = 0; i < keys.size(); i++) {
-        if (spiltKey.compareTo(keys.get(i)) < 0) {
-          index = i;
-          break;
-        }
-      }
+      int index = InnerNode.numLessThanEqual(spiltKey, keys);
       // insert pair (key, rid)
       keys.add(index, spiltKey);
-      children.add(index, rightNodePageNum);
+      children.add(index+1, rightNodePageNum);
 
       if (keys.size() <= metadata.getOrder() * 2) {
         pair = Optional.empty();
@@ -123,6 +117,7 @@ class InnerNode extends BPlusNode {
         List<DataBox> newKeys = new ArrayList<>();
         List<Integer> newChildren = new ArrayList<>();
         int d = metadata.getOrder();
+        newChildren.add(children.remove(d + 1));
         while (d + 1 < keys.size()) {
           newKeys.add(keys.remove(d + 1));
           newChildren.add(children.remove(d + 1));
@@ -144,29 +139,30 @@ class InnerNode extends BPlusNode {
       throws BPlusTreeException {
 //    throw new UnsupportedOperationException("TODO(hw2): implement.");
     int d = metadata.getOrder();
-    BPlusNode rightMostChild = getChild(children.size() - 1);
-    Optional<Pair<DataBox, Integer>> op = rightMostChild.bulkLoad(data, fillFactor);
-    if (op.isPresent()) {
-      DataBox key = op.get().getFirst();
-      int pageNum = op.get().getSecond();
-
-      keys.add(key);
-      children.add(pageNum);
-
-      if (keys.size() <= d * 2) {
-        op = Optional.empty();
-      } else {
-        List<DataBox> newKeys = new ArrayList<>();
-        List<Integer> newChildren = new ArrayList<>();
-        while (d + 1 < keys.size()) {
-          newKeys.add(keys.remove(d + 1));
-          newChildren.add(children.remove(d + 1));
-        }
-        DataBox newSplitKey = keys.remove(d);
-        InnerNode rightInnerNode = new InnerNode(metadata, newKeys, newChildren);
-        int rightInnerNodePageNum = rightInnerNode.getPage().getPageNum();
-        op = Optional.of(new Pair<>(newSplitKey, rightInnerNodePageNum));
+    Optional<Pair<DataBox, Integer>> op;
+    while (data.hasNext() && keys.size() <= d * 2) {
+      BPlusNode rightMostChild = getChild(children.size() - 1);
+      op = rightMostChild.bulkLoad(data, fillFactor);
+      if (op.isPresent()) {
+        keys.add(op.get().getFirst());
+        children.add(op.get().getSecond());
       }
+    }
+
+    if (keys.size() > d * 2) {
+      List<DataBox> newKeys = new ArrayList<>();
+      List<Integer> newChildren = new ArrayList<>();
+      newChildren.add(children.remove(d + 1));
+      while (d + 1 < keys.size()) {
+        newKeys.add(keys.remove(d + 1));
+        newChildren.add(children.remove(d + 1));
+      }
+      DataBox newSplitKey = keys.remove(d);
+      InnerNode rightInnerNode = new InnerNode(metadata, newKeys, newChildren);
+      int rightInnerNodePageNum = rightInnerNode.getPage().getPageNum();
+      op = Optional.of(new Pair<>(newSplitKey, rightInnerNodePageNum));
+    } else {
+      op = Optional.empty();
     }
     sync();
     return op;
